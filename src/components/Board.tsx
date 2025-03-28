@@ -1,4 +1,3 @@
-// src/components/Board.tsx
 'use client';
 
 import { useRef, useEffect } from 'react';
@@ -11,6 +10,7 @@ interface BoardProps {
   lastMove: {x: number, y: number} | null;
   isGameEnded: boolean;
   onIntersectionClick: (x: number, y: number) => void;
+  markers?: { x: number; y: number; type: string; label?: string }[];
 }
 
 export default function Board({ 
@@ -18,7 +18,8 @@ export default function Board({
   boardState, 
   lastMove, 
   isGameEnded,
-  onIntersectionClick 
+  onIntersectionClick,
+  markers 
 }: BoardProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const width = 500;
@@ -122,6 +123,78 @@ export default function Board({
       .attr('height', stoneRadius * 2)
       .attr('class', d => `stone ${STONE_CLASSES[d.stone]}`);
     
+    // 마커 그리기
+    if (markers && markers.length > 0) {
+      const markerGroup = svg.append('g').attr('class', 'markers');
+
+      markers.forEach(marker => {
+        const cx = stoneRadius + marker.x * (width / size);
+        const cy = stoneRadius + marker.y * (height / size);
+
+        if (marker.type === 'circle') {
+          markerGroup.append('circle')
+            .attr('cx', cx)
+            .attr('cy', cy)
+            .attr('r', stoneRadius / 2.2)
+            .attr('stroke', 'red')
+            .attr('stroke-width', 2)
+            .attr('fill', 'none');
+        } else if (marker.type === 'square') {
+          markerGroup.append('rect')
+            .attr('x', cx - stoneRadius / 2.2)
+            .attr('y', cy - stoneRadius / 2.2)
+            .attr('width', stoneRadius / 1.1)
+            .attr('height', stoneRadius / 1.1)
+            .attr('stroke', 'blue')
+            .attr('stroke-width', 2)
+            .attr('fill', 'none');
+        } else if (marker.type === 'triangle') {
+          const path = d3.path();
+          const r = stoneRadius / 2.2;
+          path.moveTo(cx, cy - r);
+          path.lineTo(cx - r * Math.sin(Math.PI / 3), cy + r / 2);
+          path.lineTo(cx + r * Math.sin(Math.PI / 3), cy + r / 2);
+          path.closePath();
+          markerGroup.append('path')
+            .attr('d', path.toString())
+            .attr('stroke', 'green')
+            .attr('stroke-width', 2)
+            .attr('fill', 'none');
+        } else if (marker.type === 'cross') {
+          markerGroup.append('line')
+            .attr('x1', cx - stoneRadius / 2)
+            .attr('y1', cy - stoneRadius / 2)
+            .attr('x2', cx + stoneRadius / 2)
+            .attr('y2', cy + stoneRadius / 2)
+            .attr('stroke', 'gray')
+            .attr('stroke-width', 2);
+          markerGroup.append('line')
+            .attr('x1', cx - stoneRadius / 2)
+            .attr('y1', cy + stoneRadius / 2)
+            .attr('x2', cx + stoneRadius / 2)
+            .attr('y2', cy - stoneRadius / 2)
+            .attr('stroke', 'gray')
+            .attr('stroke-width', 2);
+        } else if (marker.type === 'letter') {
+          markerGroup.append('text')
+            .attr('x', cx)
+            .attr('y', cy + 4)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 18)
+            .attr('fill', 'purple')
+            .text(marker.label || 'A');
+        } else if (marker.type === 'number') {
+          markerGroup.append('text')
+            .attr('x', cx)
+            .attr('y', cy + 4)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 18)
+            .attr('fill', 'hotpink')
+            .text(marker.label || '1');
+        }
+      });
+    }
+
     // 클릭 영역
     const overlay = svg.append('g').attr('class', 'overlay');
     
@@ -159,7 +232,7 @@ export default function Board({
       // (간소화 버전에서는 생략)
     }
     
-  }, [boardState, size, lastMove, isGameEnded, stoneRadius, onIntersectionClick]);
+  }, [boardState, size, lastMove, isGameEnded, stoneRadius, onIntersectionClick, markers]);
   
   return (
     <div className="w-full flex justify-center my-4">

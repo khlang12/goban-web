@@ -14,6 +14,7 @@ interface GameControlsProps {
   onRedo: () => void;
   onSave: () => void;
   onLoad: () => void;
+  onSelectTool?: (tool: string) => void;
 }
 
 export default function GameControls({
@@ -27,7 +28,8 @@ export default function GameControls({
   onUndo,
   onRedo,
   onSave,
-  onLoad
+  onLoad,
+  onSelectTool
 }: GameControlsProps) {
   return (
     <div className="flex flex-col gap-4 my-4">
@@ -82,6 +84,45 @@ export default function GameControls({
         >
           SGF 불러오기
         </button>
+      </div>
+      
+      <div className="flex justify-center gap-2 mt-2">
+        <button 
+          onClick={() => onSelectTool?.('cross')} 
+          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+          ×
+          </button>
+        <button 
+          onClick={() => onSelectTool?.('triangle')} 
+          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+          △
+          </button>
+        <button 
+          onClick={() => onSelectTool?.('square')} 
+          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+          □
+          </button>
+        <button 
+          onClick={() => onSelectTool?.('circle')} 
+          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+          ○
+          </button>
+        <button 
+          onClick={() => onSelectTool?.('letter')} 
+          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+          A
+          </button>
+        <button 
+          onClick={() => onSelectTool?.('number')} 
+          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+          1
+          </button>
       </div>
       
       {isGameEnded && (

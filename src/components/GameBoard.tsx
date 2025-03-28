@@ -1,12 +1,14 @@
-// src/components/GameBoard.tsx
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Board from './Board';
 import GameControls from './GameControls';
 import useGame from '@/hooks/useGame';
 
 export default function GameBoard() {
+  const [currentTool, setCurrentTool] = useState<string>('move');
+  const [markers, setMarkers] = useState<{ x: number; y: number; type: string; label?: string }[]>([]);
+  
   const {
     isGameStarted,
     isGameEnded,
@@ -38,9 +40,38 @@ export default function GameBoard() {
     if (isGameEnded) {
       claimTerritory(x, y);
     } else {
-      makeMove(x, y);
+      if (currentTool === 'move') {
+        makeMove(x, y);
+      } else {
+        setMarkers(prev => {
+          const existing = prev.find(m => m.x === x && m.y === y);
+          const updated = prev.filter(m => !(m.x === x && m.y === y));
+
+          // If same marker already exists → remove it (toggle off)
+          if (existing?.type === currentTool) {
+            return updated;
+          }
+
+          let newMarker = { x, y, type: currentTool };
+
+          // Handle letter marker sequence
+          if (currentTool === 'letter') {
+            const allLetters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'];
+            const nextLetter = allLetters.filter(ch => !prev.some(m => m.type === 'letter' && m.label === ch))[0] || '?';
+            newMarker = { ...newMarker, label: nextLetter };
+          }
+
+          // Handle number marker sequence
+          if (currentTool === 'number') {
+            const nextNumber = 1 + Math.max(0, ...prev.filter(m => m.type === 'number').map(m => parseInt(m.label || '0')));
+            newMarker = { ...newMarker, label: nextNumber.toString() };
+          }
+
+          return [...updated, newMarker];
+        });
+      }
     }
-  }, [isGameEnded, makeMove, claimTerritory]);
+  }, [isGameEnded, makeMove, claimTerritory, currentTool]);
   
   if (!boardState) {
     return (
@@ -64,6 +95,7 @@ export default function GameBoard() {
         onRedo={redo}
         onSave={saveSGF}
         onLoad={importSGF}
+        onSelectTool={setCurrentTool}
       />
       
       <Board
@@ -72,6 +104,7 @@ export default function GameBoard() {
         lastMove={lastMove}
         isGameEnded={isGameEnded}
         onIntersectionClick={handleIntersectionClick}
+        markers={markers}
       />
     </div>
   );
