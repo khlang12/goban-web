@@ -15,6 +15,7 @@ interface GameControlsProps {
   onSave: () => void;
   onLoad: () => void;
   onSelectTool?: (tool: string) => void;
+  selectedTool?: string;
 }
 
 export default function GameControls({
@@ -29,7 +30,8 @@ export default function GameControls({
   onRedo,
   onSave,
   onLoad,
-  onSelectTool
+  onSelectTool,
+  selectedTool
 }: GameControlsProps) {
   return (
     <div className="flex flex-col gap-4 my-4">
@@ -88,41 +90,41 @@ export default function GameControls({
       
       <div className="flex justify-center gap-2 mt-2">
         <button 
-          onClick={() => onSelectTool?.('cross')} 
-          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
-          >
+          onClick={() => onSelectTool?.(selectedTool === 'cross' ? 'move' : 'cross')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'cross' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
           ×
-          </button>
+        </button>
         <button 
-          onClick={() => onSelectTool?.('triangle')} 
-          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
-          >
+          onClick={() => onSelectTool?.(selectedTool === 'triangle' ? 'move' : 'triangle')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'triangle' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
           △
-          </button>
+        </button>
         <button 
-          onClick={() => onSelectTool?.('square')} 
-          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
-          >
+          onClick={() => onSelectTool?.(selectedTool === 'square' ? 'move' : 'square')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'square' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
           □
-          </button>
+        </button>
         <button 
-          onClick={() => onSelectTool?.('circle')} 
-          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
-          >
+          onClick={() => onSelectTool?.(selectedTool === 'circle' ? 'move' : 'circle')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'circle' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
           ○
-          </button>
+        </button>
         <button 
-          onClick={() => onSelectTool?.('letter')} 
-          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
-          >
+          onClick={() => onSelectTool?.(selectedTool === 'letter' ? 'move' : 'letter')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'letter' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
           A
-          </button>
+        </button>
         <button 
-          onClick={() => onSelectTool?.('number')} 
-          className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
-          >
+          onClick={() => onSelectTool?.(selectedTool === 'number' ? 'move' : 'number')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'number' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
           1
-          </button>
+        </button>
       </div>
       
       {isGameEnded && (

@@ -96,6 +96,7 @@ export default function GameBoard() {
         onSave={saveSGF}
         onLoad={importSGF}
         onSelectTool={setCurrentTool}
+        selectedTool={currentTool}
       />
       
       <Board
