@@ -83,6 +83,15 @@ export default function GameBoard() {
   
   return (
     <div className="container mx-auto p-4">
+      <Board
+        size={19}
+        boardState={boardState}
+        lastMove={lastMove}
+        isGameEnded={isGameEnded}
+        onIntersectionClick={handleIntersectionClick}
+        markers={markers}
+      />
+      
       <GameControls
         currentPlayer={currentPlayer}
         blackScore={blackScore}
@@ -99,14 +108,7 @@ export default function GameBoard() {
         selectedTool={currentTool}
       />
       
-      <Board
-        size={19}
-        boardState={boardState}
-        lastMove={lastMove}
-        isGameEnded={isGameEnded}
-        onIntersectionClick={handleIntersectionClick}
-        markers={markers}
-      />
+      
     </div>
   );
 }
