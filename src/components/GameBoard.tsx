@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Board from './Board';
 import GameControls from './GameControls';
 import useGame from '@/hooks/useGame';
+import RightSidebar from './RightSidebar';
 
 export default function GameBoard() {
   const [currentTool, setCurrentTool] = useState<string>('move');
@@ -82,33 +83,36 @@ export default function GameBoard() {
   }
   
   return (
-    <div className="container mx-auto p-4">
-      <Board
-        size={19}
-        boardState={boardState}
-        lastMove={lastMove}
-        isGameEnded={isGameEnded}
-        onIntersectionClick={handleIntersectionClick}
-        markers={markers}
-      />
-      
-      <GameControls
-        currentPlayer={currentPlayer}
-        blackScore={blackScore}
-        whiteScore={whiteScore}
-        blackTerritory={blackTerritory}
-        whiteTerritory={whiteTerritory}
-        isGameEnded={isGameEnded}
-        onPass={pass}
-        onUndo={undo}
-        onRedo={redo}
-        onSave={saveSGF}
-        onLoad={importSGF}
-        onSelectTool={setCurrentTool}
-        selectedTool={currentTool}
-      />
-      
-      
+    <div className="flex gap-4">
+      <div className="flex-1">
+        <div className="container mx-auto p-4">
+          <Board
+            size={19}
+            boardState={boardState}
+            lastMove={lastMove}
+            isGameEnded={isGameEnded}
+            onIntersectionClick={handleIntersectionClick}
+            markers={markers}
+          />
+          
+          <GameControls
+            currentPlayer={currentPlayer}
+            blackScore={blackScore}
+            whiteScore={whiteScore}
+            blackTerritory={blackTerritory}
+            whiteTerritory={whiteTerritory}
+            isGameEnded={isGameEnded}
+            onPass={pass}
+            onUndo={undo}
+            onRedo={redo}
+            onSave={saveSGF}
+            onLoad={importSGF}
+            onSelectTool={setCurrentTool}
+            selectedTool={currentTool}
+          />
+        </div>
+      </div>
+      <RightSidebar />
     </div>
   );
 }
