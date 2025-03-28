@@ -52,7 +52,7 @@ export default function GameBoard() {
             return updated;
           }
 
-          let newMarker = { x, y, type: currentTool };
+          let newMarker: { x: number; y: number; type: string; label?: string } = { x, y, type: currentTool };
 
           // Handle letter marker sequence
           if (currentTool === 'letter') {
