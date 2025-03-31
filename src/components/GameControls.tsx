@@ -1,4 +1,3 @@
-// src/components/GameControls.tsx
 'use client';
 
 import { Stone } from '@/lib/types';
@@ -14,6 +13,9 @@ interface GameControlsProps {
   onUndo: () => void;
   onRedo: () => void;
   onSave: () => void;
+  onLoad: () => void;
+  onSelectTool?: (tool: string) => void;
+  selectedTool?: string;
 }
 
 export default function GameControls({
@@ -26,7 +28,10 @@ export default function GameControls({
   onPass,
   onUndo,
   onRedo,
-  onSave
+  onSave,
+  onLoad,
+  onSelectTool,
+  selectedTool
 }: GameControlsProps) {
   return (
     <div className="flex flex-col gap-4 my-4">
@@ -74,6 +79,51 @@ export default function GameControls({
           className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600"
         >
           SGF 저장
+        </button>
+        <button 
+          onClick={onLoad}
+          className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          SGF 불러오기
+        </button>
+      </div>
+      
+      <div className="flex justify-center gap-2 mt-2">
+        <button 
+          onClick={() => onSelectTool?.(selectedTool === 'cross' ? 'move' : 'cross')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'cross' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
+          ×
+        </button>
+        <button 
+          onClick={() => onSelectTool?.(selectedTool === 'triangle' ? 'move' : 'triangle')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'triangle' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
+          △
+        </button>
+        <button 
+          onClick={() => onSelectTool?.(selectedTool === 'square' ? 'move' : 'square')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'square' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
+          □
+        </button>
+        <button 
+          onClick={() => onSelectTool?.(selectedTool === 'circle' ? 'move' : 'circle')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'circle' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
+          ○
+        </button>
+        <button 
+          onClick={() => onSelectTool?.(selectedTool === 'letter' ? 'move' : 'letter')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'letter' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
+          A
+        </button>
+        <button 
+          onClick={() => onSelectTool?.(selectedTool === 'number' ? 'move' : 'number')} 
+          className={`px-3 py-2 rounded hover:bg-gray-300 ${selectedTool === 'number' ? 'bg-gray-400 ring-2 ring-black font-bold' : 'bg-gray-200'}`}
+        >
+          1
         </button>
       </div>
       

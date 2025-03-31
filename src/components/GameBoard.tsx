@@ -1,12 +1,15 @@
-// src/components/GameBoard.tsx
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Board from './Board';
 import GameControls from './GameControls';
 import useGame from '@/hooks/useGame';
+import RightSidebar from './RightSidebar';
 
 export default function GameBoard() {
+  const [currentTool, setCurrentTool] = useState<string>('move');
+  const [markers, setMarkers] = useState<{ x: number; y: number; type: string; label?: string }[]>([]);
+  
   const {
     isGameStarted,
     isGameEnded,
@@ -22,6 +25,7 @@ export default function GameBoard() {
     undo,
     redo,
     saveSGF,
+    importSGF,
     claimTerritory,
     startGame
   } = useGame();
@@ -37,9 +41,38 @@ export default function GameBoard() {
     if (isGameEnded) {
       claimTerritory(x, y);
     } else {
-      makeMove(x, y);
+      if (currentTool === 'move') {
+        makeMove(x, y);
+      } else {
+        setMarkers(prev => {
+          const existing = prev.find(m => m.x === x && m.y === y);
+          const updated = prev.filter(m => !(m.x === x && m.y === y));
+
+          // If same marker already exists → remove it (toggle off)
+          if (existing?.type === currentTool) {
+            return updated;
+          }
+
+          let newMarker: { x: number; y: number; type: string; label?: string } = { x, y, type: currentTool };
+
+          // Handle letter marker sequence
+          if (currentTool === 'letter') {
+            const allLetters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'];
+            const nextLetter = allLetters.filter(ch => !prev.some(m => m.type === 'letter' && m.label === ch))[0] || '?';
+            newMarker = { ...newMarker, label: nextLetter };
+          }
+
+          // Handle number marker sequence
+          if (currentTool === 'number') {
+            const nextNumber = 1 + Math.max(0, ...prev.filter(m => m.type === 'number').map(m => parseInt(m.label || '0')));
+            newMarker = { ...newMarker, label: nextNumber.toString() };
+          }
+
+          return [...updated, newMarker];
+        });
+      }
     }
-  }, [isGameEnded, makeMove, claimTerritory]);
+  }, [isGameEnded, makeMove, claimTerritory, currentTool]);
   
   if (!boardState) {
     return (
@@ -50,27 +83,36 @@ export default function GameBoard() {
   }
   
   return (
-    <div className="container mx-auto p-4">
-      <GameControls
-        currentPlayer={currentPlayer}
-        blackScore={blackScore}
-        whiteScore={whiteScore}
-        blackTerritory={blackTerritory}
-        whiteTerritory={whiteTerritory}
-        isGameEnded={isGameEnded}
-        onPass={pass}
-        onUndo={undo}
-        onRedo={redo}
-        onSave={saveSGF}
-      />
-      
-      <Board
-        size={19}
-        boardState={boardState}
-        lastMove={lastMove}
-        isGameEnded={isGameEnded}
-        onIntersectionClick={handleIntersectionClick}
-      />
+    <div className="flex gap-4">
+      <div className="flex-1">
+        <div className="container mx-auto p-4">
+          <Board
+            size={19}
+            boardState={boardState}
+            lastMove={lastMove}
+            isGameEnded={isGameEnded}
+            onIntersectionClick={handleIntersectionClick}
+            markers={markers}
+          />
+          
+          <GameControls
+            currentPlayer={currentPlayer}
+            blackScore={blackScore}
+            whiteScore={whiteScore}
+            blackTerritory={blackTerritory}
+            whiteTerritory={whiteTerritory}
+            isGameEnded={isGameEnded}
+            onPass={pass}
+            onUndo={undo}
+            onRedo={redo}
+            onSave={saveSGF}
+            onLoad={importSGF}
+            onSelectTool={setCurrentTool}
+            selectedTool={currentTool}
+          />
+        </div>
+      </div>
+      <RightSidebar />
     </div>
   );
 }

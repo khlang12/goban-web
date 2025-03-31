@@ -95,14 +95,16 @@ export default function useGame() {
     if (!gameRef.current) return;
     
     gameRef.current.undo();
-  }, []);
+    updateGameState();
+  }, [updateGameState]);
   
   // 앞으로 가기
   const redo = useCallback(() => {
     if (!gameRef.current) return;
     
     gameRef.current.redo();
-  }, []);
+    updateGameState();
+  }, [updateGameState]);
   
   // SGF 저장
   const saveSGF = useCallback(() => {
@@ -110,7 +112,25 @@ export default function useGame() {
     
     gameRef.current.saveSGF();
   }, []);
-  
+
+  // SGF 불러오기
+  const importSGF = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.sgf';
+    input.onchange = (event: any) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const sgfContent = reader.result as string;
+        loadSGF(sgfContent);
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }, [loadSGF]);
+
   // 영역 점령
   const claimTerritory = useCallback((x: number, y: number) => {
     if (!gameRef.current || !isGameEnded) return false;
@@ -140,6 +160,7 @@ export default function useGame() {
     undo,
     redo,
     saveSGF,
-    claimTerritory
+    claimTerritory,
+    importSGF,
   };
 }
