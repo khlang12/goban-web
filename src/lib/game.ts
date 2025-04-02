@@ -325,16 +325,20 @@ export class Game {
             if (marker.type === 'triangle') grouped.TR.push(c);
             else if (marker.type === 'square') grouped.SQ.push(c);
             else if (marker.type === 'cross') grouped.CR.push(c);
-            else if (marker.type === 'circle') grouped.MA.push(c);
-            else if (marker.type === 'letter' || marker.type === 'number') {
-              grouped.LB.push(`${c}:${marker.label}`);
-            }
+            else if (marker.type === 'circle') grouped.CR.push(c);
+              else if (marker.type === 'letter' || marker.type === 'number') {
+                grouped.LB.push(`${String.fromCharCode(97 + marker.x)}${String.fromCharCode(97 + marker.y)}:${marker.label}`);
+              }
           }
         }
  
         for (const [tag, entries] of Object.entries(grouped)) {
           if (entries.length > 0) {
-            node += `${tag}${entries.map(e => `[${e}]`).join('')}`;
+            if (tag === 'LB') {
+              node += `LB${entries.map(e => `[${e}]`).join('')}`;
+            } else {
+              node += `${tag}${entries.join('')}`;
+            }
           }
         }
       } else {
