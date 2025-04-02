@@ -289,7 +289,7 @@ export class Game {
    */
   public getSGF(): string {
     let sgfNodes = [
-      ";GM[1]FF[4]CA[UTF-8]AP[Goban]SZ[19]"
+      ";GM[1]FF[4]CA[UTF-8]AP[Goggle]SZ[19]"
     ];
 
     if (!this.gameState) return `(${sgfNodes.join('')})`;
