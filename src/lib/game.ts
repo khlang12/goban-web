@@ -178,7 +178,7 @@ export class GameStateImpl implements GameState {
  */
 export class Game {
   public intersections: Intersection[][];
-  public markers: { x: number; y: number; type: string; label?: string }[] = [];
+  public markers: { x: number; y: number; type: string; label?: string; moveNum?: number }[] = [];
   private gameState: GameState | null = null;
   private lastMove: Intersection | null = null;
   private xLines: number = 19;
@@ -297,44 +297,51 @@ export class Game {
     for (let state = this.gameState.getState(1); state != null; state = state.nextGameState) {
       const turn = state.turn !== Stone.Black ? "B" : "W";
       const move = state.move;
-
+ 
+      let node = "";
+ 
       if (move) {
         const xChar = String.fromCharCode(97 + move.xPos);
         const yChar = String.fromCharCode(97 + move.yPos);
-        sgfNodes.push(`;${turn}[${xChar}${yChar}]`);
-      } else {
-        sgfNodes.push(`;${turn}[]`);
-      }
-    }
+        node += `;${turn}[${xChar}${yChar}]`;
+ 
+        const coord = (x: number, y: number) =>
+          `[${String.fromCharCode(97 + x)}${String.fromCharCode(97 + y)}]`;
+ 
+        const grouped = {
+          TR: [] as string[], // triangle
+          SQ: [] as string[], // square
+          CR: [] as string[], // cross
+          MA: [] as string[], // circle
+          LB: [] as string[], // label
+        };
+ 
+        for (const marker of this.markers) {
+          const c = coord(marker.x, marker.y);
+          const isMatchingMoveNum = marker.moveNum === state.moveNum;
+          const isMatchingCoords = move && marker.x === move.xPos && marker.y === move.yPos;
 
-    if (this.markers.length > 0) {
-      const coord = (x: number, y: number) =>
-        `[${String.fromCharCode(97 + x)}${String.fromCharCode(97 + y)}]`;
-  
-      const grouped = {
-        TR: [] as string[], // triangle
-        SQ: [] as string[], // square
-        CR: [] as string[], // cross
-        MA: [] as string[], // circle
-        LB: [] as string[], // label
-      };
-  
-      for (const marker of this.markers) {
-        const c = coord(marker.x, marker.y);
-        if (marker.type === 'triangle') grouped.TR.push(c);
-        else if (marker.type === 'square') grouped.SQ.push(c);
-        else if (marker.type === 'cross') grouped.CR.push(c);
-        else if (marker.type === 'circle') grouped.MA.push(c);
-        else if (marker.type === 'letter' || marker.type === 'number') {
-          grouped.LB.push(`${c}:${marker.label}`);
+          if (isMatchingMoveNum || (!marker.moveNum && isMatchingCoords)) {
+            if (marker.type === 'triangle') grouped.TR.push(c);
+            else if (marker.type === 'square') grouped.SQ.push(c);
+            else if (marker.type === 'cross') grouped.CR.push(c);
+            else if (marker.type === 'circle') grouped.MA.push(c);
+            else if (marker.type === 'letter' || marker.type === 'number') {
+              grouped.LB.push(`${c}:${marker.label}`);
+            }
+          }
         }
-      }
-  
-      for (const [tag, entries] of Object.entries(grouped)) {
-        if (entries.length > 0) {
-          sgfNodes.push(`${tag}${entries.map(e => `[${e}]`).join('')}`);
+ 
+        for (const [tag, entries] of Object.entries(grouped)) {
+          if (entries.length > 0) {
+            node += `${tag}${entries.map(e => `[${e}]`).join('')}`;
+          }
         }
+      } else {
+        node += `;${turn}[]`;
       }
+ 
+      sgfNodes.push(node);
     }
     return `(${sgfNodes.join('')})`;
   }

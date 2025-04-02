@@ -10,7 +10,7 @@ import RightSidebar from './RightSidebar';
 
 export default function GameBoard() {
   const [currentTool, setCurrentTool] = useState<string>('move');
-  const [markers, setMarkers] = useState<{ x: number; y: number; type: string; label?: string }[]>([]);
+  const [markers, setMarkers] = useState<{ x: number; y: number; type: string; label?: string; moveNum?: number }[]>([]);
   
   const {
     isGameStarted,
@@ -69,7 +69,12 @@ export default function GameBoard() {
             return updated;
           }
 
-          let newMarker: { x: number; y: number; type: string; label?: string } = { x, y, type: currentTool };
+          let newMarker: { x: number; y: number; type: string; label?: string; moveNum?: number } = {
+            x,
+            y,
+            type: currentTool,
+            moveNum: game?.getGameState()?.moveNum,
+          };
 
           // Handle letter marker sequence
           if (currentTool === 'letter') {
