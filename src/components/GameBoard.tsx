@@ -1,6 +1,8 @@
 'use client';
+import { Game } from '@/lib/game';
+import * as FileSaver from 'file-saver';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import Board from './Board';
 import GameControls from './GameControls';
 import useGame from '@/hooks/useGame';
@@ -24,11 +26,13 @@ export default function GameBoard() {
     pass,
     undo,
     redo,
-    saveSGF,
     importSGF,
     claimTerritory,
-    startGame
+    startGame,
+    game
   } = useGame();
+
+  const gameRef = useRef<Game | null>(null);
   
   // 컴포넌트가 마운트되면 자동으로 게임을 시작합니다
   useEffect(() => {
@@ -36,6 +40,18 @@ export default function GameBoard() {
       startGame();
     }
   }, [boardState, startGame]);
+  
+  useEffect(() => {
+    if (game) {
+      gameRef.current = game;
+    }
+  }, [game]);
+  
+  useEffect(() => {
+    if (gameRef.current) {
+      gameRef.current.markers = markers;
+    }
+  }, [markers]);
   
   const handleIntersectionClick = useCallback((x: number, y: number) => {
     if (isGameEnded) {
@@ -105,7 +121,13 @@ export default function GameBoard() {
             onPass={pass}
             onUndo={undo}
             onRedo={redo}
-            onSave={saveSGF}
+            onSave={() => {
+              const sgf = gameRef.current?.saveSGF();
+              if (sgf) {
+                const blob = new Blob([sgf], { type: 'application/x-go-sgf' });
+                FileSaver.saveAs(blob, 'game.sgf');
+              }
+            }}
             onLoad={importSGF}
             onSelectTool={setCurrentTool}
             selectedTool={currentTool}

@@ -178,6 +178,7 @@ export class GameStateImpl implements GameState {
  */
 export class Game {
   public intersections: Intersection[][];
+  public markers: { x: number; y: number; type: string; label?: string }[] = [];
   private gameState: GameState | null = null;
   private lastMove: Intersection | null = null;
   private xLines: number = 19;
@@ -306,6 +307,35 @@ export class Game {
       }
     }
 
+    if (this.markers.length > 0) {
+      const coord = (x: number, y: number) =>
+        `[${String.fromCharCode(97 + x)}${String.fromCharCode(97 + y)}]`;
+  
+      const grouped = {
+        TR: [] as string[], // triangle
+        SQ: [] as string[], // square
+        CR: [] as string[], // cross
+        MA: [] as string[], // circle
+        LB: [] as string[], // label
+      };
+  
+      for (const marker of this.markers) {
+        const c = coord(marker.x, marker.y);
+        if (marker.type === 'triangle') grouped.TR.push(c);
+        else if (marker.type === 'square') grouped.SQ.push(c);
+        else if (marker.type === 'cross') grouped.CR.push(c);
+        else if (marker.type === 'circle') grouped.MA.push(c);
+        else if (marker.type === 'letter' || marker.type === 'number') {
+          grouped.LB.push(`${c}:${marker.label}`);
+        }
+      }
+  
+      for (const [tag, entries] of Object.entries(grouped)) {
+        if (entries.length > 0) {
+          sgfNodes.push(`${tag}${entries.map(e => `[${e}]`).join('')}`);
+        }
+      }
+    }
     return `(${sgfNodes.join('')})`;
   }
 
