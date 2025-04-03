@@ -46,6 +46,12 @@ export default function GameBoard() {
       gameRef.current = game;
     }
   }, [game]);
+
+  useEffect(() => {
+    if (game) {
+      setMarkers(game.markers ?? []);
+    }
+  }, [game?.getGameState()]);
   
   useEffect(() => {
     if (gameRef.current) {
