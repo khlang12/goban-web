@@ -1,8 +1,7 @@
 'use client';
 import { Game } from '@/lib/game';
 import * as FileSaver from 'file-saver';
-
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Board from './Board';
 import GameControls from './GameControls';
 import useGame from '@/hooks/useGame';
@@ -10,7 +9,6 @@ import RightSidebar from './RightSidebar';
 
 export default function GameBoard() {
   const [currentTool, setCurrentTool] = useState<string>('move');
-  const [markers, setMarkers] = useState<{ x: number; y: number; type: string; label?: string; moveNum?: number }[]>([]);
   
   const {
     isGameStarted,
@@ -29,7 +27,9 @@ export default function GameBoard() {
     importSGF,
     claimTerritory,
     startGame,
-    game
+    game,
+    markers,
+    setMarkers
   } = useGame();
 
   const gameRef = useRef<Game | null>(null);

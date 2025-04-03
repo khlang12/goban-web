@@ -29,6 +29,24 @@ export default function Board({
   useEffect(() => {
     if (!svgRef.current || !boardState) return;
     
+    console.log('🔍 Markers received by Board:', markers);
+    if (markers && markers.length > 0) {
+      markers.forEach(m => {
+        console.log(`🟢 Marker → x: ${m.x}, y: ${m.y}, type: ${m.type}, label: ${m.label}`);
+      });
+    }
+
+    const normalizeType = (type: string): string => {
+      switch (type.toLowerCase()) {
+        case 'tr': return 'triangle';
+        case 'sq': return 'square';
+        case 'cr':
+        case 'ma': return 'circle';
+        case 'lb': return 'letter';
+        default: return type.toLowerCase();
+      }
+    };
+
     const svg = d3.select(svgRef.current);
     
     // 기존 요소 제거
@@ -125,6 +143,7 @@ export default function Board({
     
     // 마커 그리기
     if (markers && markers.length > 0) {
+      markers = markers.map(m => ({ ...m, type: normalizeType(m.type) }));
       const markerGroup = svg.append('g').attr('class', 'markers');
 
       markers.forEach(marker => {

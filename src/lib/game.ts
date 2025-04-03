@@ -122,7 +122,8 @@ export class GameStateImpl implements GameState {
     t: Stone, 
     bScore: number = 0, 
     wScore: number = 0, 
-    prev: GameState | null = null
+    prev: GameState | null = null,
+    public markers: { x: number; y: number; type: string; label?: string; moveNum?: number }[] = []
   ) {
     this.turn = t;
     this.prevGameState = prev;
@@ -223,47 +224,72 @@ export class Game {
    * SGF 파일 로드
    */
   public static loadSGF(sgfContent: string): Game | null {
-    // 간소화된 SGF 로드 구현
     const game = new Game();
-    let size: number = 19;
-    let moveNum = 0;
-
     const charToPos = (char: string) => char.charCodeAt(0) - 97;
-
-    const runMove = (turn: Stone, val: string) => {
-      if (game) {
-        game.setTurn(turn);
-
-        if (val === '') {
-          game.pass();
-        } else {
-          game.makeMove(charToPos(val[0]), charToPos(val[1]));
-        }
-      }
-    }
-
-    // 기본 SGF 구문 분석 (간소화됨)
+ 
+    // Parse board size
     const sizeMatch = sgfContent.match(/SZ\[(\d+)\]/);
     if (sizeMatch) {
-      size = parseInt(sizeMatch[1]);
+      const size = parseInt(sizeMatch[1]);
       game.xLines = size;
       game.yLines = size;
       game.intersections = Game.initIntersections(size, size);
       game.gameState = game.newGameState();
     }
-
-    // 돌 배치 읽기
-    const moveRegex = /;([BW])\[([a-z][a-z]|)\]/g;
-    let match;
-    while ((match = moveRegex.exec(sgfContent)) !== null) {
-      const color = match[1] === 'B' ? Stone.Black : Stone.White;
-      const coord = match[2];
-      runMove(color, coord);
+ 
+    // Parse nodes one by one
+    const nodes = sgfContent.split(';').map(s => s.trim()).filter(s => s);
+    const movePattern = /^(B|W)\[([a-z]{0,2})\]/;
+    const markerPattern = /(TR|SQ|CR|MA|LB)((\[[^\]]+\])+)/g;
+ 
+    for (const node of nodes) {
+      const moveMatch = node.match(movePattern);
+      if (!moveMatch) continue;
+ 
+      const color = moveMatch[1] === 'B' ? Stone.Black : Stone.White;
+      const coord = moveMatch[2];
+ 
+      const markers: { x: number; y: number; type: string; label?: string; moveNum?: number }[] = [];
+      let markerMatch;
+      while ((markerMatch = markerPattern.exec(node)) !== null) {
+        const type = markerMatch[1];
+        const coords = [...markerMatch[2].matchAll(/\[([a-z]{2})(?::([^\]]+))?\]/g)];
+        for (const [, pos, label] of coords) {
+          const x = charToPos(pos[0]);
+          const y = charToPos(pos[1]);
+          markers.push({ x, y, type: type === "MA" ? "circle" : type.toLowerCase(), label });
+        }
+      }
+ 
+      game.setTurn(color);
+      let moveMade = false;
+      if (coord === '') {
+        game.pass();
+      } else {
+        moveMade = game.makeMove(charToPos(coord[0]), charToPos(coord[1]));
+      }
+ 
+      if (moveMade || coord === '') {
+        const newState = new GameStateImpl(
+          game.copyIntersections(),
+          game.turn,
+          game.blackScore,
+          game.whiteScore,
+          game.gameState,
+          markers
+        );
+        if (coord !== '') {
+          newState.move = game.intersections[charToPos(coord[0])][charToPos(coord[1])].copy();
+        }
+        game.gameState = newState;
+        game.markers = markers;
+      }
     }
-
+ 
     if (game.stateChangeCallback) {
       game.stateChangeCallback();
     }
+ 
     return game;
   }
 
@@ -532,6 +558,7 @@ export class Game {
     this.blackScore = state.blackScore;
     this.whiteScore = state.whiteScore;
     this.gameState = state;
+    this.markers = state.markers ?? [];
     this.notifyStateChange();
   }
 

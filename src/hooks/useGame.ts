@@ -14,6 +14,7 @@ export default function useGame() {
   const [whiteTerritory, setWhiteTerritory] = useState(0);
   const [currentPlayer, setCurrentPlayer] = useState<Stone>(Stone.Black);
   const [lastMove, setLastMove] = useState<{x: number, y: number} | null>(null);
+  const [markers, setMarkers] = useState<{ x: number; y: number; type: string; label?: string; moveNum?: number }[]>([]);
   const gameRef = useRef<Game | null>(null);
   
   // 게임 상태 변화 시 UI 업데이트
@@ -68,6 +69,7 @@ export default function useGame() {
       setCurrentPlayer(loadedGame.getTurn());
       const lastMove = loadedGame.getLastMove();
       setLastMove(lastMove ? {x: lastMove.xPos, y: lastMove.yPos} : null);
+      setMarkers(loadedGame.markers ?? []);
     }
   }, []);
   
@@ -162,5 +164,7 @@ export default function useGame() {
     saveSGF,
     claimTerritory,
     importSGF,
+    markers,
+    setMarkers,
   };
 }
