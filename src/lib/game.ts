@@ -244,12 +244,9 @@ export class Game {
  
     for (const node of nodes) {
       const moveMatch = node.match(movePattern);
-      if (!moveMatch) continue;
- 
-      const color = moveMatch[1] === 'B' ? Stone.Black : Stone.White;
-      const coord = moveMatch[2];
- 
       const markers: { x: number; y: number; type: string; label?: string; moveNum?: number }[] = [];
+    
+      // 마커 먼저 파싱
       let markerMatch;
       while ((markerMatch = markerPattern.exec(node)) !== null) {
         const type = markerMatch[1];
@@ -260,30 +257,39 @@ export class Game {
           markers.push({ x, y, type: type === "MA" ? "circle" : type.toLowerCase(), label });
         }
       }
- 
+    
+      // 수가 없으면 건너뜀
+      if (!moveMatch) continue;
+    
+      const color = moveMatch[1] === 'B' ? Stone.Black : Stone.White;
+      const coord = moveMatch[2];
+    
       game.setTurn(color);
-      let moveMade = false;
+    
       if (coord === '') {
         game.pass();
       } else {
-        moveMade = game.makeMove(charToPos(coord[0]), charToPos(coord[1]));
+        const x = charToPos(coord[0]);
+        const y = charToPos(coord[1]);
+        game.intersections[x][y].stone = color;
+        game.lastMove = game.intersections[x][y];
       }
- 
-      if (moveMade || coord === '') {
-        const newState = new GameStateImpl(
-          game.copyIntersections(),
-          game.turn,
-          game.blackScore,
-          game.whiteScore,
-          game.gameState,
-          markers
-        );
-        if (coord !== '') {
-          newState.move = game.intersections[charToPos(coord[0])][charToPos(coord[1])].copy();
-        }
-        game.gameState = newState;
-        game.markers = markers;
+
+      const newState = new GameStateImpl(
+        game.copyIntersections(),
+        game.turn,
+        game.blackScore,
+        game.whiteScore,
+        game.gameState,
+        markers
+      );
+
+      if (coord !== '') {
+        newState.move = game.intersections[charToPos(coord[0])][charToPos(coord[1])].copy();
       }
+
+      game.gameState = newState;
+      game.markers = newState.markers;
     }
  
     if (game.stateChangeCallback) {

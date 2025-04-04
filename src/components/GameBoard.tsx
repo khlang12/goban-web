@@ -27,9 +27,7 @@ export default function GameBoard() {
     importSGF,
     claimTerritory,
     startGame,
-    game,
-    markers,
-    setMarkers
+    game
   } = useGame();
 
   const gameRef = useRef<Game | null>(null);
@@ -48,17 +46,11 @@ export default function GameBoard() {
   }, [game]);
 
   useEffect(() => {
-    if (game) {
-      setMarkers(game.markers ?? []);
-    }
-  }, [game?.getGameState()]);
-  
-  useEffect(() => {
     if (gameRef.current) {
-      gameRef.current.markers = markers;
+      gameRef.current.markers = game?.getGameState()?.markers ?? [];
     }
-  }, [markers]);
-  
+  }, [game]);
+
   const handleIntersectionClick = useCallback((x: number, y: number) => {
     if (isGameEnded) {
       claimTerritory(x, y);
@@ -66,37 +58,7 @@ export default function GameBoard() {
       if (currentTool === 'move') {
         makeMove(x, y);
       } else {
-        setMarkers(prev => {
-          const existing = prev.find(m => m.x === x && m.y === y);
-          const updated = prev.filter(m => !(m.x === x && m.y === y));
-
-          // If same marker already exists → remove it (toggle off)
-          if (existing?.type === currentTool) {
-            return updated;
-          }
-
-          let newMarker: { x: number; y: number; type: string; label?: string; moveNum?: number } = {
-            x,
-            y,
-            type: currentTool,
-            moveNum: game?.getGameState()?.moveNum,
-          };
-
-          // Handle letter marker sequence
-          if (currentTool === 'letter') {
-            const allLetters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'];
-            const nextLetter = allLetters.filter(ch => !prev.some(m => m.type === 'letter' && m.label === ch))[0] || '?';
-            newMarker = { ...newMarker, label: nextLetter };
-          }
-
-          // Handle number marker sequence
-          if (currentTool === 'number') {
-            const nextNumber = 1 + Math.max(0, ...prev.filter(m => m.type === 'number').map(m => parseInt(m.label || '0')));
-            newMarker = { ...newMarker, label: nextNumber.toString() };
-          }
-
-          return [...updated, newMarker];
-        });
+        // Removed markers and setMarkers usage
       }
     }
   }, [isGameEnded, makeMove, claimTerritory, currentTool]);
@@ -119,7 +81,7 @@ export default function GameBoard() {
             lastMove={lastMove}
             isGameEnded={isGameEnded}
             onIntersectionClick={handleIntersectionClick}
-            markers={markers}
+            markers={game?.getGameState()?.markers ?? []}
           />
           
           <GameControls
