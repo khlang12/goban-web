@@ -65,6 +65,7 @@ export default function useGame() {
   const loadSGF = useCallback((sgfContent: string) => {
     const loadedGame = Game.loadSGF(sgfContent);
     if (loadedGame) {
+      loadedGame.setStateChangeCallback(updateGameState);
       gameRef.current = loadedGame;
       setGame(loadedGame);
       setIsGameStarted(true);

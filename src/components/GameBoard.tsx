@@ -63,11 +63,14 @@ export default function GameBoard() {
         const existing = game?.getGameState()?.markers?.find(m => m.x === x && m.y === y);
         if (existing?.type === currentTool) {
           // Toggle off
+          if (!game) return;
           game.markers = game.markers.filter(m => !(m.x === x && m.y === y && m.type === currentTool));
-          if (game.getGameState()) {
-            game.getGameState()!.markers = [...game.markers];
+          const state = game.getGameState();
+          if (state) {
+            state.markers = [...game.markers];
           }
         } else {
+          if (!game) return;
           let label: string | undefined = undefined;
 
           if (currentTool === 'letter') {

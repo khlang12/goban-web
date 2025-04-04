@@ -909,4 +909,7 @@ export class Game {
 
     this.notifyStateChange();
   }
+  public setStateChangeCallback(cb: () => void): void {
+    this.stateChangeCallback = cb;
+  }
 }
