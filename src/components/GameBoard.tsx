@@ -27,7 +27,8 @@ export default function GameBoard() {
     importSGF,
     claimTerritory,
     startGame,
-    game
+    game,
+    comment
   } = useGame();
 
   const gameRef = useRef<Game | null>(null);
@@ -107,7 +108,7 @@ export default function GameBoard() {
           />
         </div>
       </div>
-      <RightSidebar />
+      <RightSidebar comment={comment} />
     </div>
   );
 }

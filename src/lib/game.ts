@@ -116,6 +116,7 @@ export class GameStateImpl implements GameState {
   whiteScore: number = 0;
   isPass: boolean = false;
   move: Intersection | null = null;
+  public comment: string = '';
 
   constructor(
     ints: Intersection[][], 
@@ -123,13 +124,15 @@ export class GameStateImpl implements GameState {
     bScore: number = 0, 
     wScore: number = 0, 
     prev: GameState | null = null,
-    public markers: { x: number; y: number; type: string; label?: string; moveNum?: number }[] = []
+    public markers: { x: number; y: number; type: string; label?: string; moveNum?: number }[] = [],
+    comment: string = ''
   ) {
     this.turn = t;
     this.prevGameState = prev;
     this.intersections = ints;
     this.blackScore = bScore;
     this.whiteScore = wScore;
+    this.comment = comment;
 
     if(prev === null) {
       this.moveNum = 0;
@@ -257,6 +260,11 @@ export class Game {
           markers.push({ x, y, type: type === "MA" ? "circle" : type.toLowerCase(), label });
         }
       }
+      
+      // Extract and log comment
+      const commentMatch = node.match(/C\[([\s\S]*?)\](?=\s|$)/);
+      const comment = commentMatch ? commentMatch[1].replace(/\\]/g, "]") : '';
+      console.log(`Parsed comment for node:`, comment);
     
       // 수가 없으면 건너뜀
       if (!moveMatch) continue;
@@ -274,20 +282,21 @@ export class Game {
         game.intersections[x][y].stone = color;
         game.lastMove = game.intersections[x][y];
       }
-
+ 
       const newState = new GameStateImpl(
         game.copyIntersections(),
         game.turn,
         game.blackScore,
         game.whiteScore,
         game.gameState,
-        markers
+        markers,
+        comment
       );
-
+ 
       if (coord !== '') {
         newState.move = game.intersections[charToPos(coord[0])][charToPos(coord[1])].copy();
       }
-
+ 
       game.gameState = newState;
       game.markers = newState.markers;
     }

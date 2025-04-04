@@ -31,6 +31,7 @@ export interface GameState {
   whiteScore: number;
   isPass: boolean;
   move: Intersection | null;
+  comment?: string;
   toString: () => string;
   getState: (moveNum: number) => GameState | null;
   markers?: { x: number; y: number; type: string; label?: string; moveNum?: number }[];

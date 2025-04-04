@@ -1,4 +1,4 @@
-export default function RightSidebar() {
+export default function RightSidebar({ comment }: { comment: string }) {
     return (
       <aside className="w-64 p-4 border-l bg-gray-100 flex flex-col min-h-screen">
         <div className="h-[44%] border-b pb-2 flex flex-col">
@@ -22,6 +22,8 @@ export default function RightSidebar() {
             <textarea
               className="border rounded px-2 py-1 h-full w-full resize-none"
               placeholder="AI 코멘트 불러올 영역, 사용자 수정도 가능"
+              value={comment}
+              readOnly
             />
           </div>
         </div>

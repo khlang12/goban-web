@@ -4,6 +4,7 @@ import { Game } from '@/lib/game';
 import { Stone } from '@/lib/types';
 
 export default function useGame() {
+  const [comment, setComment] = useState('');
   const [game, setGame] = useState<Game | null>(null);
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [isGameEnded, setIsGameEnded] = useState(false);
@@ -29,6 +30,10 @@ export default function useGame() {
     
     const lastMove = game.getLastMove();
     setLastMove(lastMove ? {x: lastMove.xPos, y: lastMove.yPos} : null);
+    
+    const currentComment = game.getGameState()?.comment ?? '';
+    console.log("🗒️ Updating comment from GameState:", currentComment);
+    setComment(currentComment);
     
     // 영역 점수 계산
     const { territory: blackTerr } = game.getScoreWithTerritory(Stone.Black);
@@ -70,6 +75,7 @@ export default function useGame() {
       const lastMove = loadedGame.getLastMove();
       setLastMove(lastMove ? {x: lastMove.xPos, y: lastMove.yPos} : null);
       setMarkers(loadedGame.markers ?? []);
+      setComment(loadedGame.getGameState()?.comment ?? '');
     }
   }, []);
   
@@ -166,5 +172,6 @@ export default function useGame() {
     importSGF,
     markers,
     setMarkers,
+    comment,
   };
 }
