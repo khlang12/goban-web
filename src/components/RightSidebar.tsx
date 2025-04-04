@@ -16,12 +16,11 @@ export default function RightSidebar({ comment }: { comment: string }) {
         </div>
 
         <div className="h-[44%] flex flex-col">
-          <h3 className="text-md font-semibold mb-1">AI Comment</h3>
+          <h3 className="text-md font-semibold mb-1">User Comment</h3>
           <div className="bg-white rounded p-2 shadow-inner flex flex-col overflow-auto flex-grow">
-            <div className="mb-2">AIcomment 기능이 구현될 부분</div>
             <textarea
               className="border rounded px-2 py-1 h-full w-full resize-none"
-              placeholder="AI 코멘트 불러올 영역, 사용자 수정도 가능"
+              placeholder="User Comment 영역"
               value={comment}
               readOnly
             />
