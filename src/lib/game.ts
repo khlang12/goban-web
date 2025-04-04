@@ -332,20 +332,24 @@ export class Game {
     let sgfNodes = [
       ";GM[1]FF[4]CA[UTF-8]AP[Goggle]SZ[19]"
     ];
-
+ 
     if (!this.gameState) return `(${sgfNodes.join('')})`;
-    
+ 
+    let prevMove: Stone | null = null; // Track the previous move color
+ 
     for (let state = this.gameState.getState(1); state != null; state = state.nextGameState) {
-      const turn = state.turn !== Stone.Black ? "B" : "W";
+      const turn = state.turn === Stone.Black ? "B" : "W";
       const move = state.move;
  
       let node = "";
  
+      // Include move if it exists
       if (move) {
         const xChar = String.fromCharCode(97 + move.xPos);
         const yChar = String.fromCharCode(97 + move.yPos);
         node += `;${turn}[${xChar}${yChar}]`;
  
+        // Add markers
         const coord = (x: number, y: number) =>
           `[${String.fromCharCode(97 + x)}${String.fromCharCode(97 + y)}]`;
  
@@ -357,22 +361,21 @@ export class Game {
           LB: [] as string[], // label
         };
  
-        for (const marker of this.markers) {
+        const allMarkers = [...this.markers, ...(state.markers ?? [])];
+        for (const marker of allMarkers) {
           const c = coord(marker.x, marker.y);
-          const isMatchingMoveNum = marker.moveNum === state.moveNum;
-          const isMatchingCoords = move && marker.x === move.xPos && marker.y === move.yPos;
-
-          if (isMatchingMoveNum || (!marker.moveNum && isMatchingCoords)) {
+          if (marker.moveNum === state.moveNum || (marker.moveNum == null && move && marker.x === move.xPos && marker.y === move.yPos)) {
             if (marker.type === 'triangle') grouped.TR.push(c);
             else if (marker.type === 'square') grouped.SQ.push(c);
             else if (marker.type === 'cross') grouped.CR.push(c);
             else if (marker.type === 'circle') grouped.CR.push(c);
-              else if (marker.type === 'letter' || marker.type === 'number') {
-                grouped.LB.push(`${String.fromCharCode(97 + marker.x)}${String.fromCharCode(97 + marker.y)}:${marker.label}`);
-              }
+            else if (marker.type === 'letter' || marker.type === 'number') {
+              grouped.LB.push(`${String.fromCharCode(97 + marker.x)}${String.fromCharCode(97 + marker.y)}:${marker.label}`);
+            }
           }
         }
  
+        // Add markers to the node
         for (const [tag, entries] of Object.entries(grouped)) {
           if (entries.length > 0) {
             if (tag === 'LB') {
@@ -382,12 +385,22 @@ export class Game {
             }
           }
         }
-      } else {
-        node += `;${turn}[]`;
+      }
+ 
+      // Preserve comments if available
+      if (state.comment) {
+        node += `C[${state.comment}]`;
+      }
+ 
+      // Add empty move for passes
+      if (!move && prevMove === Stone.Black) {
+        node += `;W[]`;
       }
  
       sgfNodes.push(node);
+      prevMove = state.turn; // Update previous move to current turn
     }
+ 
     return `(${sgfNodes.join('')})`;
   }
 
@@ -544,13 +557,15 @@ export class Game {
   /**
    * 새 게임 상태 생성
    */
-  private newGameState(): GameState {
+  private newGameState(comment: string = ''): GameState {
     return new GameStateImpl(
       this.copyIntersections(), 
       this.turn, 
       this.blackScore, 
       this.whiteScore, 
-      this.gameState
+      this.gameState,
+      [],
+      comment
     );
   }
 
