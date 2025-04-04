@@ -28,7 +28,8 @@ export default function GameBoard() {
     claimTerritory,
     startGame,
     game,
-    comment
+    comment,
+    addMarker
   } = useGame();
 
   const gameRef = useRef<Game | null>(null);
@@ -59,10 +60,35 @@ export default function GameBoard() {
       if (currentTool === 'move') {
         makeMove(x, y);
       } else {
-        // Removed markers and setMarkers usage
+        const existing = game?.getGameState()?.markers?.find(m => m.x === x && m.y === y);
+        if (existing?.type === currentTool) {
+          // Toggle off
+          game.markers = game.markers.filter(m => !(m.x === x && m.y === y && m.type === currentTool));
+          if (game.getGameState()) {
+            game.getGameState()!.markers = [...game.markers];
+          }
+        } else {
+          let label: string | undefined = undefined;
+
+          if (currentTool === 'letter') {
+            const allLetters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'];
+            const usedLabels = game.markers.filter(m => m.type === 'letter').map(m => m.label);
+            label = allLetters.find(ch => !usedLabels.includes(ch)) ?? '?';
+          }
+
+          if (currentTool === 'number') {
+            const usedNumbers = game.markers
+              .filter(m => m.type === 'number')
+              .map(m => parseInt(m.label || '0'));
+            const nextNumber = 1 + Math.max(0, ...usedNumbers);
+            label = nextNumber.toString();
+          }
+
+          game.addMarker(x, y, currentTool, label);
+        }
       }
     }
-  }, [isGameEnded, makeMove, claimTerritory, currentTool]);
+  }, [isGameEnded, makeMove, claimTerritory, currentTool, game]);
   
   if (!boardState) {
     return (

@@ -42,7 +42,8 @@ export default function Board({
         case 'sq': return 'square';
         case 'cr':
         case 'ma': return 'circle';
-        case 'lb': return 'letter';
+        case 'lb':
+        case 'label': return 'letter';
         default: return type.toLowerCase();
       }
     };

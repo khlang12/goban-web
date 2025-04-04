@@ -897,4 +897,16 @@ export class Game {
     
     return { score: baseScore, territory: territoryScore };
   }
+
+  public addMarker(x: number, y: number, type: string, label?: string): void {
+    const moveNum = this.gameState?.moveNum ?? 0;
+    const marker = { x, y, type, label, moveNum };
+
+    this.markers.push(marker);
+    if (this.gameState) {
+      this.gameState.markers = [...(this.gameState.markers ?? []), marker];
+    }
+
+    this.notifyStateChange();
+  }
 }

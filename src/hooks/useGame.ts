@@ -150,6 +150,13 @@ export default function useGame() {
     return success;
   }, [isGameEnded, updateGameState]);
 
+  const addMarker = useCallback((x: number, y: number, type: string, label?: string) => {
+    if (!gameRef.current) return;
+
+    gameRef.current.addMarker(x, y, type, label);
+    updateGameState();
+  }, [updateGameState]);
+
   return {
     game,
     isGameStarted,
@@ -173,5 +180,6 @@ export default function useGame() {
     markers,
     setMarkers,
     comment,
+    addMarker,
   };
 }
