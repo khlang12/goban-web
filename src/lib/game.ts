@@ -15,7 +15,7 @@ import * as FileSaver from 'file-saver';
  * 같은 위치의 교차점을 중복 없이 저장하기 위해 사용
  */
 export class HashSet<T extends Hashable> {
-  private hashSet: {[key: string]: T} = {};
+  private hashSet: Map<string, T> = new Map();
 
   constructor(...items: T[]) {
     for(const item of items) {
@@ -24,17 +24,17 @@ export class HashSet<T extends Hashable> {
   }
 
   public includes(item: T | null): boolean {
-    return item ? this.hashSet[item.hashKey()] === item : false;
+    return item ? this.hashSet.has(item.hashKey()) : false;
   }
 
   public insert(item: T | null) {
     if(item) {
-      this.hashSet[item.hashKey()] = item;
+      this.hashSet.set(item.hashKey(), item);
     }
   }
 
   public values(): T[] {
-    return Object.keys(this.hashSet).map(key => this.hashSet[key]);
+    return Array.from(this.hashSet.values());
   }
 }
 
@@ -168,7 +168,7 @@ export class GameStateImpl implements GameState {
     let state: GameState = this;
 
     while(state.moveNum > moveNum) {
-      if (!state.prevGameState) return null;
+      if (!state?.prevGameState) return null;
       state = state.prevGameState;
     }
 
@@ -251,15 +251,15 @@ export class Game {
     
       // 마커 먼저 파싱
       let markerMatch;
-      while ((markerMatch = markerPattern.exec(node)) !== null) {
-        const type = markerMatch[1];
-        const coords = [...markerMatch[2].matchAll(/\[([a-z]{2})(?::([^\]]+))?\]/g)];
-        for (const [, pos, label] of coords) {
-          const x = charToPos(pos[0]);
-          const y = charToPos(pos[1]);
-          markers.push({ x, y, type: type === "MA" ? "circle" : type.toLowerCase(), label });
+        while ((markerMatch = markerPattern.exec(node)) !== null) {
+          const type = markerMatch[1];
+          const coords = [...markerMatch[2].matchAll(/\[([a-z]{2})(?::([^\]]+))?\]/g)];
+          for (const [, pos, label] of coords) {
+            const x = charToPos(pos[0]);
+            const y = charToPos(pos[1]);
+            markers.push({ x, y, type: type === "MA" ? "cross" : type === "CR" ? "circle" : type.toLowerCase(), label });
+          }
         }
-      }
       
       // Extract and log comment
       const commentMatch = node.match(/C\[([\s\S]*?)\](?=\s|$)/);
@@ -320,7 +320,7 @@ export class Game {
     const hh = String(date.getHours()).padStart(2, '0');
     const min = String(date.getMinutes()).padStart(2, '0');
     const dateString = `${yy}${mm}${dd}-${hh}${min}`;
-    const fileName = `Goggle-${dateString}.sgf`;
+    const fileName = `Goggle-${dateString}.sgf`.replace(/[<>:"/\\|?*]/g, '_');
 
     FileSaver.saveAs(sgfBlob, fileName);
   }
@@ -365,10 +365,10 @@ export class Game {
         for (const marker of allMarkers) {
           const c = coord(marker.x, marker.y);
           if (marker.moveNum === state.moveNum || (marker.moveNum == null && move && marker.x === move.xPos && marker.y === move.yPos)) {
-            if (marker.type === 'triangle') grouped.TR.push(c);
-            else if (marker.type === 'square') grouped.SQ.push(c);
-            else if (marker.type === 'cross') grouped.CR.push(c);
-            else if (marker.type === 'circle') grouped.CR.push(c);
+          if (marker.type === 'triangle') grouped.TR.push(c);
+          else if (marker.type === 'square') grouped.SQ.push(c);
+          else if (marker.type === 'cr') grouped.CR.push(c);
+          else if (marker.type === 'ma') grouped.MA.push(c);
             else if (marker.type === 'letter' || marker.type === 'number') {
               grouped.LB.push(`${String.fromCharCode(97 + marker.x)}${String.fromCharCode(97 + marker.y)}:${marker.label}`);
             }

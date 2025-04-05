@@ -40,8 +40,8 @@ export default function Board({
       switch (type.toLowerCase()) {
         case 'tr': return 'triangle';
         case 'sq': return 'square';
-        case 'cr':
-        case 'ma': return 'circle';
+        case 'cr': return 'circle';
+        case 'ma': return 'cross';
         case 'lb':
         case 'label': return 'letter';
         default: return type.toLowerCase();
