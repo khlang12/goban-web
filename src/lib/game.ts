@@ -456,14 +456,21 @@ export class Game {
           LB: [] as string[], // label
         };
  
-        const allMarkers = [...this.markers, ...(state.markers ?? [])];
+        const markerMap = new Map<string, typeof this.markers[0]>();
+        for (const marker of [...this.markers, ...(state.markers ?? [])]) {
+          const key = `${marker.x}-${marker.y}-${marker.type}-${marker.label || ''}-${marker.moveNum || ''}`;
+          if (!markerMap.has(key)) {
+            markerMap.set(key, marker);
+          }
+        }
+        const allMarkers = Array.from(markerMap.values());
         for (const marker of allMarkers) {
           const c = coord(marker.x, marker.y);
           if (marker.moveNum === state.moveNum || (marker.moveNum == null && move && marker.x === move.xPos && marker.y === move.yPos)) {
-          if (marker.type === 'triangle') grouped.TR.push(c);
-          else if (marker.type === 'square') grouped.SQ.push(c);
-          else if (marker.type === 'cr') grouped.CR.push(c);
-          else if (marker.type === 'ma') grouped.MA.push(c);
+            if (marker.type === 'triangle') grouped.TR.push(c);
+            else if (marker.type === 'square') grouped.SQ.push(c);
+            else if (marker.type === 'circle') grouped.CR.push(c); // CR is circle
+            else if (marker.type === 'cross') grouped.MA.push(c); // MA is cross
             else if (marker.type === 'letter' || marker.type === 'number') {
               grouped.LB.push(`${String.fromCharCode(97 + marker.x)}${String.fromCharCode(97 + marker.y)}:${marker.label}`);
             }
@@ -1016,14 +1023,25 @@ export class Game {
   }
 
   public addMarker(x: number, y: number, type: string, label?: string): void {
+    // Check if a marker already exists at the clicked position and remove it
+    const existingIndex = this.markers.findIndex(m => m.x === x && m.y === y);
+    if (existingIndex !== -1) {
+      this.markers.splice(existingIndex, 1);
+      if (this.gameState && this.gameState.markers) {
+        this.gameState.markers = this.gameState.markers.filter(m => !(m.x === x && m.y === y));
+      }
+    }
+
     const moveNum = this.gameState?.moveNum ?? 0;
     const marker = { x, y, type, label, moveNum };
 
+    // Add the new marker
     this.markers.push(marker);
     if (this.gameState) {
       this.gameState.markers = [...(this.gameState.markers ?? []), marker];
     }
 
+    // Update the game state
     this.notifyStateChange();
   }
   public setStateChangeCallback(cb: () => void): void {
