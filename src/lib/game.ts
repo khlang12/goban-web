@@ -244,6 +244,7 @@ export class Game {
     const nodes = sgfContent.split(';').map(s => s.trim()).filter(s => s);
     const movePattern = /^(B|W)\[([a-z]{0,2})\]/;
     const markerPattern = /(TR|SQ|CR|MA|LB)((\[[^\]]+\])+)/g;
+    let lastMoveColor: Stone | null = null;
   
     // 이전 게임 상태를 추적하여 불필요한 참조 줄이기
     let prevState: GameState | null = game.gameState;
@@ -380,6 +381,7 @@ export class Game {
       }
       
       game.setTurn(color);
+      lastMoveColor = color;
     }
     
     // 최종 상태 적용
@@ -390,7 +392,14 @@ export class Game {
     if (game.stateChangeCallback) {
       game.stateChangeCallback();
     }
-    
+
+    // 마지막 수가 흑이면 백의 턴, 백이면 흑의 턴으로 설정
+    if (lastMoveColor === Stone.Black) {
+      game.setTurn(Stone.White);
+    } else if (lastMoveColor === Stone.White) {
+      game.setTurn(Stone.Black);
+    }
+
     return game;
   }
 
@@ -680,6 +689,14 @@ export class Game {
     this.whiteScore = state.whiteScore;
     this.gameState = state;
     this.markers = state.markers ?? [];
+
+    // 턴을 해당 수순에 맞게 설정
+    if (state.move && state.move.stone === Stone.Black) {
+      this.setTurn(Stone.White); // 마지막 수가 흑이면 백의 턴
+    } else if (state.move && state.move.stone === Stone.White) {
+      this.setTurn(Stone.Black); // 마지막 수가 백이면 흑의 턴
+    }
+
     this.notifyStateChange();
   }
 
