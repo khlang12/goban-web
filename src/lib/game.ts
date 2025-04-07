@@ -229,8 +229,8 @@ export class Game {
   public static loadSGF(sgfContent: string): Game | null {
     const game = new Game();
     const charToPos = (char: string) => char.charCodeAt(0) - 97;
- 
-    // Parse board size
+  
+    // Parse board size - 정규식 최적화
     const sizeMatch = sgfContent.match(/SZ\[(\d+)\]/);
     if (sizeMatch) {
       const size = parseInt(sizeMatch[1]);
@@ -239,72 +239,158 @@ export class Game {
       game.intersections = Game.initIntersections(size, size);
       game.gameState = game.newGameState();
     }
- 
-    // Parse nodes one by one
+  
+    // 노드 파싱 최적화 - 한 번에 분할
     const nodes = sgfContent.split(';').map(s => s.trim()).filter(s => s);
     const movePattern = /^(B|W)\[([a-z]{0,2})\]/;
     const markerPattern = /(TR|SQ|CR|MA|LB)((\[[^\]]+\])+)/g;
- 
+  
+    // 이전 게임 상태를 추적하여 불필요한 참조 줄이기
+    let prevState: GameState | null = game.gameState;
+    let boardState = game.copyIntersections(); // 현재 보드 상태 복사본
+  
     for (const node of nodes) {
       const moveMatch = node.match(movePattern);
       const markers: { x: number; y: number; type: string; label?: string; moveNum?: number }[] = [];
     
-      // 마커 먼저 파싱
+      // 마커 파싱 - 정규식 재사용
       let markerMatch;
-        while ((markerMatch = markerPattern.exec(node)) !== null) {
-          const type = markerMatch[1];
-          const coords = [...markerMatch[2].matchAll(/\[([a-z]{2})(?::([^\]]+))?\]/g)];
-          for (const [, pos, label] of coords) {
+      while ((markerMatch = markerPattern.exec(node)) !== null) {
+        const type = markerMatch[1];
+        const coordsStr = markerMatch[2];
+        const coords = coordsStr.match(/\[([a-z]{2})(?::([^\]]+))?\]/g) || [];
+        
+        for (let i = 0; i < coords.length; i++) {
+          const coord = coords[i];
+          const posMatch = coord.match(/\[([a-z]{2})(?::([^\]]+))?\]/);
+          if (posMatch) {
+            const pos = posMatch[1];
+            const label = posMatch[2];
             const x = charToPos(pos[0]);
             const y = charToPos(pos[1]);
-            markers.push({ x, y, type: type === "MA" ? "cross" : type === "CR" ? "circle" : type.toLowerCase(), label });
+            markers.push({ 
+              x, 
+              y, 
+              type: type === "MA" ? "cross" : type === "CR" ? "circle" : type.toLowerCase(), 
+              label 
+            });
           }
         }
+      }
       
-      // Extract and log comment
+      // 코멘트 추출 - 정규식 간소화
       const commentMatch = node.match(/C\[([\s\S]*?)\](?=\s|$)/);
       const comment = commentMatch ? commentMatch[1].replace(/\\]/g, "]") : '';
-      console.log(`Parsed comment for node:`, comment);
-    
-      // 수가 없으면 건너뜀
-      if (!moveMatch) continue;
-    
-      const color = moveMatch[1] === 'B' ? Stone.Black : Stone.White;
-      const coord = moveMatch[2];
-    
-      game.setTurn(color);
-    
-      if (coord === '') {
-        game.pass();
-      } else {
+      
+      // 수가 없으면 건너뜀 (하지만 마커나 코멘트가 있으면 처리)
+      if (!moveMatch && markers.length === 0 && !comment) continue;
+      
+      const color = moveMatch ? (moveMatch[1] === 'B' ? Stone.Black : Stone.White) : game.turn;
+      const coord = moveMatch ? moveMatch[2] : '';
+      
+      // 보드 상태 복사 대신 기존 배열 재사용
+      let newBoardState = game.copyIntersections();
+      
+      if (moveMatch && coord !== '') {
         const x = charToPos(coord[0]);
         const y = charToPos(coord[1]);
-        game.intersections[x][y].stone = color;
-        game.lastMove = game.intersections[x][y];
+        
+        // 보드에 돌 직접 놓기
+        newBoardState[x][y].stone = color;
+        
+        // 포획 로직 간소화
+        if (game.intersections[x][y].stone === Stone.None) {
+          // 돌 놓기
+          game.intersections[x][y].stone = color;
+          
+          // 포획 로직 효율적으로 실행
+          const otherPlayer = color === Stone.Black ? Stone.White : Stone.Black;
+          const capturedGroups = [];
+          
+          // 이웃 확인 - 직접 좌표 배열 사용
+          const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+          const processedStones = new Set<string>();
+          
+          for (const [dx, dy] of directions) {
+            const nx = x + dx;
+            const ny = y + dy;
+            
+            // 유효 범위 확인
+            if (nx >= 0 && nx < game.xLines && ny >= 0 && ny < game.yLines) {
+              const neighbor = game.intersections[nx][ny];
+              
+              // 상대 돌이고 아직 처리되지 않았으면
+              if (neighbor.stone === otherPlayer && !processedStones.has(`${nx},${ny}`)) {
+                const captured = game.getCapturedGroup(neighbor);
+                
+                if (captured.length > 0) {
+                  capturedGroups.push(captured);
+                  
+                  // 포획된 돌 처리
+                  for (const stone of captured) {
+                    processedStones.add(`${stone.xPos},${stone.yPos}`);
+                    newBoardState[stone.xPos][stone.yPos].stone = Stone.None;
+                    game.intersections[stone.xPos][stone.yPos].stone = Stone.None;
+                  }
+                }
+              }
+            }
+          }
+          
+          // 자기 돌도 잡힐 수 있는지 확인
+          const selfCaptured = game.getCapturedGroup(game.intersections[x][y]);
+          if (selfCaptured.length > 0) {
+            for (const stone of selfCaptured) {
+              newBoardState[stone.xPos][stone.yPos].stone = Stone.None;
+              game.intersections[stone.xPos][stone.yPos].stone = Stone.None;
+            }
+          }
+          
+          game.lastMove = game.intersections[x][y];
+        }
       }
- 
+      
+      // 게임 상태 생성 및 연결
       const newState = new GameStateImpl(
-        game.copyIntersections(),
-        game.turn,
+        newBoardState,
+        color,
         game.blackScore,
         game.whiteScore,
-        game.gameState,
+        prevState,
         markers,
         comment
       );
- 
-      if (coord !== '') {
-        newState.move = game.intersections[charToPos(coord[0])][charToPos(coord[1])].copy();
+      
+      if (coord !== '' && moveMatch) {
+        const x = charToPos(coord[0]);
+        const y = charToPos(coord[1]);
+        newState.move = newBoardState[x][y].copy();
       }
- 
-      game.gameState = newState;
-      game.markers = newState.markers;
+      
+      // 상태 업데이트
+      if (prevState) {
+        prevState.nextGameState = newState;
+      }
+      
+      prevState = newState;
+      boardState = newBoardState;
+      
+      if (!game.gameState || game.gameState.moveNum === 0) {
+        game.gameState = newState;
+      }
+      
+      game.setTurn(color);
     }
- 
+    
+    // 최종 상태 적용
+    if (prevState && prevState !== game.gameState) {
+      game.loadGameState(prevState);
+    }
+    
     if (game.stateChangeCallback) {
       game.stateChangeCallback();
     }
- 
+    
     return game;
   }
 
@@ -455,17 +541,10 @@ export class Game {
     let numCaptured = 0;
     for (const group of capturedNeighbors) {
       for (const stone of group) {
+        // 명시적으로 돌을 제거
         this.intersections[stone.xPos][stone.yPos].stone = Stone.None;
         numCaptured++;
       }
-    }
-    
-    // 고 규칙 확인
-    if (this.checkForKo()) {
-      if (this.gameState) {
-        this.loadGameState(this.gameState);
-      }
-      return false;
     }
     
     // 점수 업데이트
@@ -477,6 +556,16 @@ export class Game {
       }
     }
     
+    // 고 규칙 확인 - 제거 후에 확인해야 함
+    if (this.checkForKo()) {
+      // Ko 규칙 위반이면 원래 상태로 복원
+      if (this.gameState) {
+        this.loadGameState(this.gameState);
+      }
+      return false;
+    }
+    
+    // 이동을 기록하고 턴 변경
     this.lastMove = this.intersections[xPos][yPos];
     this.nextTurn();
     return true;
@@ -540,15 +629,17 @@ export class Game {
    * 다음 턴으로 넘어가기
    */
   private nextTurn(): void {
+    // 먼저 현재 상태 저장
+    this.gameState = this.newGameState();
+    if (this.lastMove) {
+      this.gameState.move = this.lastMove.copy();
+    }
+    
+    // 그 다음 턴 변경
     if (this.turn === Stone.Black) {
       this.setTurn(Stone.White);
     } else {
       this.setTurn(Stone.Black);
-    }
-
-    this.gameState = this.newGameState();
-    if (this.lastMove) {
-      this.gameState.move = this.lastMove.copy();
     }
     
     this.notifyStateChange();
@@ -621,25 +712,19 @@ export class Game {
     const neighbors = this.getAdjacentNeighbors(intersection);
     let capturedGroups: Intersection[][] = [];
 
-    // 중복 검사를 위한 해시셋
-    let allCapturedStones: HashSet<Intersection> = new HashSet();
+    // 이미 처리된 돌을 추적하는 HashSet
+    let processedStones: HashSet<Intersection> = new HashSet();
     
-    const doesOverlap = (captured: Intersection[]) => {
-      for (let int of captured) {
-        if (allCapturedStones.includes(int)) {
-          return true;
-        } else {
-          allCapturedStones.insert(int);
-        }
-      }
-      return false;
-    };
-
     for (let neighbor of neighbors) {
       if (neighbor && neighbor.stone === otherPlayer) {
+        // 이미 처리된 돌은 건너뛰기
+        if (processedStones.includes(neighbor)) continue;
+        
         const captured = this.getCapturedGroup(neighbor);
-
-        if (captured.length > 0 && !doesOverlap(captured)) {
+        
+        if (captured.length > 0) {
+          // 새로 포획된 그룹의 모든 돌을 processedStones에 추가
+          captured.forEach(stone => processedStones.insert(stone));
           capturedGroups.push(captured);
         }
       }
