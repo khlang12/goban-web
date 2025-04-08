@@ -62,23 +62,21 @@ export default function GameBoard() {
       } else {
         const existing = game?.getGameState()?.markers?.find(m => m.x === x && m.y === y);
         if (existing?.type === currentTool) {
-          // Toggle off
           if (!game) return;
           game.markers = game.markers.filter(m => !(m.x === x && m.y === y && m.type === currentTool));
           const state = game.getGameState();
           if (state) {
             state.markers = [...game.markers];
           }
+          game.notifyStateChange();
         } else {
           if (!game) return;
           let label: string | undefined = undefined;
-
           if (currentTool === 'letter') {
             const allLetters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'];
             const usedLabels = game.markers.filter(m => m.type === 'letter').map(m => m.label);
             label = allLetters.find(ch => !usedLabels.includes(ch)) ?? '?';
           }
-
           if (currentTool === 'number') {
             const usedNumbers = game.markers
               .filter(m => m.type === 'number')
@@ -86,7 +84,6 @@ export default function GameBoard() {
             const nextNumber = 1 + Math.max(0, ...usedNumbers);
             label = nextNumber.toString();
           }
-
           game.addMarker(x, y, currentTool, label);
         }
       }

@@ -228,7 +228,10 @@ export default function Board({
           .attr('fill', 'transparent')
           .attr('data-x', x)
           .attr('data-y', y)
-          .on('click', () => onIntersectionClick(x, y));
+          .on('click', () => {
+            console.log('[Board] Overlay clicked at:', { x, y });
+            onIntersectionClick(x, y);
+          });
       }
     }
     

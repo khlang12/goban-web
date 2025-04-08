@@ -993,7 +993,7 @@ export class Game {
   /**
    * 상태 변화 알림
    */
-  private notifyStateChange(): void {
+  public notifyStateChange(): void {
     if (this.stateChangeCallback) {
       this.stateChangeCallback();
     }
@@ -1023,25 +1023,26 @@ export class Game {
   }
 
   public addMarker(x: number, y: number, type: string, label?: string): void {
-    // Check if a marker already exists at the clicked position and remove it
+    
     const existingIndex = this.markers.findIndex(m => m.x === x && m.y === y);
+  
     if (existingIndex !== -1) {
+      // 기존 마커 삭제
       this.markers.splice(existingIndex, 1);
       if (this.gameState && this.gameState.markers) {
         this.gameState.markers = this.gameState.markers.filter(m => !(m.x === x && m.y === y));
       }
     }
-
+  
     const moveNum = this.gameState?.moveNum ?? 0;
     const marker = { x, y, type, label, moveNum };
-
-    // Add the new marker
+  
+    // 새 마커 추가
     this.markers.push(marker);
     if (this.gameState) {
       this.gameState.markers = [...(this.gameState.markers ?? []), marker];
     }
-
-    // Update the game state
+  
     this.notifyStateChange();
   }
   public setStateChangeCallback(cb: () => void): void {
