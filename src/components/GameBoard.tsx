@@ -102,16 +102,7 @@ export default function GameBoard() {
   return (
     <div className="flex gap-4">
       <div className="flex-1">
-        <div className="container mx-auto p-4">
-          <Board
-            size={19}
-            boardState={boardState}
-            lastMove={lastMove}
-            isGameEnded={isGameEnded}
-            onIntersectionClick={handleIntersectionClick}
-            markers={game?.getGameState()?.markers ?? []}
-          />
-          
+        <div className="container mx-auto p-4">          
           <GameControls
             currentPlayer={currentPlayer}
             blackScore={blackScore}
@@ -133,6 +124,15 @@ export default function GameBoard() {
             onSelectTool={setCurrentTool}
             selectedTool={currentTool}
           />
+
+          <Board
+            size={19}
+            boardState={boardState}
+            lastMove={lastMove}
+            isGameEnded={isGameEnded}
+            onIntersectionClick={handleIntersectionClick}
+            markers={game?.getGameState()?.markers ?? []}
+          />  
         </div>
       </div>
       <RightSidebar comment={comment} setComment={setComment} gameRef={gameRef} />
