@@ -121,7 +121,7 @@ export default function GameBoard() {
               }
             }}
             onLoad={importSGF}
-            showToolButtons={false}
+            showOnlyControlButtons={true}
           />
 
           <Board
@@ -154,6 +154,27 @@ export default function GameBoard() {
             onSelectTool={setCurrentTool}
             selectedTool={currentTool}
             showOnlyToolButtons={true}
+          />
+
+          <GameControls
+            currentPlayer={currentPlayer}
+            blackScore={blackScore}
+            whiteScore={whiteScore}
+            blackTerritory={blackTerritory}
+            whiteTerritory={whiteTerritory}
+            isGameEnded={isGameEnded}
+            onPass={pass}
+            onUndo={undo}
+            onRedo={redo}
+            onSave={() => {
+              const sgf = gameRef.current?.saveSGF();
+              if (sgf) {
+                const blob = new Blob([sgf], { type: 'application/x-go-sgf' });
+                FileSaver.saveAs(blob, 'game.sgf');
+              }
+            }}
+            onLoad={importSGF}
+            showOnlyScoreBoxes={true}
           />
         </div>
       </div>
