@@ -228,6 +228,7 @@ export class Game {
    */
   public static loadSGF(sgfContent: string): Game | null {
     const game = new Game();
+    sgfContent = sgfContent.trim().replace(/\)+$/, '');
     const charToPos = (char: string) => char.charCodeAt(0) - 97;
   
     // Parse board size - 정규식 최적화
