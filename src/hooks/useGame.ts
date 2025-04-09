@@ -181,6 +181,7 @@ export default function useGame() {
     markers,
     setMarkers,
     comment,
+    setComment,
     addMarker,
   };
 }

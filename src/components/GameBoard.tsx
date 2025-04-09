@@ -29,6 +29,7 @@ export default function GameBoard() {
     startGame,
     game,
     comment,
+    setComment,
     addMarker
   } = useGame();
 
@@ -134,7 +135,7 @@ export default function GameBoard() {
           />
         </div>
       </div>
-      <RightSidebar comment={comment} />
+      <RightSidebar comment={comment} setComment={setComment} gameRef={gameRef} />
     </div>
   );
 }
