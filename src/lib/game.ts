@@ -469,8 +469,8 @@ export class Game {
         const grouped = {
           TR: [] as string[], // triangle
           SQ: [] as string[], // square
-          CR: [] as string[], // cross
-          MA: [] as string[], // circle
+          CR: [] as string[], // circle
+          MA: [] as string[], // cross
           LB: [] as string[], // label
         };
  
@@ -487,8 +487,8 @@ export class Game {
           if (marker.moveNum === state.moveNum || (marker.moveNum == null && move && marker.x === move.xPos && marker.y === move.yPos)) {
             if (marker.type === 'triangle') grouped.TR.push(c);
             else if (marker.type === 'square') grouped.SQ.push(c);
-            else if (marker.type === 'circle') grouped.CR.push(c); // CR is circle
-            else if (marker.type === 'cross') grouped.MA.push(c); // MA is cross
+            else if (marker.type === 'circle') grouped.CR.push(c);
+            else if (marker.type === 'cross') grouped.MA.push(c);
             else if (marker.type === 'letter' || marker.type === 'number') {
               grouped.LB.push(`${String.fromCharCode(97 + marker.x)}${String.fromCharCode(97 + marker.y)}:${marker.label}`);
             }

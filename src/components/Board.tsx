@@ -170,7 +170,7 @@ export default function Board({
             .attr('fill', 'none');
         } else if (marker.type === 'triangle') {
           const path = d3.path();
-          const r = stoneRadius / 2.2;
+          const r = stoneRadius / 1.6;
           path.moveTo(cx, cy - r);
           path.lineTo(cx - r * Math.sin(Math.PI / 3), cy + r / 2);
           path.lineTo(cx + r * Math.sin(Math.PI / 3), cy + r / 2);
@@ -186,14 +186,14 @@ export default function Board({
             .attr('y1', cy - stoneRadius / 2)
             .attr('x2', cx + stoneRadius / 2)
             .attr('y2', cy + stoneRadius / 2)
-            .attr('stroke', 'gray')
+            .attr('stroke', 'yellow')
             .attr('stroke-width', 2);
           markerGroup.append('line')
             .attr('x1', cx - stoneRadius / 2)
             .attr('y1', cy + stoneRadius / 2)
             .attr('x2', cx + stoneRadius / 2)
             .attr('y2', cy - stoneRadius / 2)
-            .attr('stroke', 'gray')
+            .attr('stroke', 'yellow')
             .attr('stroke-width', 2);
         } else if (marker.type === 'letter') {
           markerGroup.append('text')
@@ -209,7 +209,7 @@ export default function Board({
             .attr('y', cy + 4)
             .attr('text-anchor', 'middle')
             .attr('font-size', 18)
-            .attr('fill', 'hotpink')
+            .attr('fill', 'purple')
             .text(marker.label || '1');
         }
       });
