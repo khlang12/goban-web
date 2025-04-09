@@ -27,15 +27,13 @@ export default function Home() {
   
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-gray-800 text-white p-4">
+      <header className="fixed w-full top-0 bg-white/90 backdrop-blur-md z-50 px-6 py-5 border-b border-gray-100">
         <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold">
-            Goggle <sup>BETA</sup>
-          </h1>
+          <p className="text-xl font-bold tracking-tight text-gray-900">goggle<span className="text-sky-400">.</span></p>
         </div>
       </header>
       
-      <main className="flex-grow">
+      <main className="flex-grow pt-[69px]">
         {isGameStarted ? (
           <GameBoard />
         ) : (
@@ -59,8 +57,38 @@ export default function Home() {
         )}
       </main>
       
-      <footer className="bg-gray-800 text-white text-center p-4">
-        <p>© 2025 Goggle</p>
+      <footer className="bg-gray-50 border-t border-gray-100 py-10">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-6 md:mb-0">
+              <p className="text-xl font-bold tracking-tight text-gray-900">
+                goggle
+                <span className="text-sky-400">
+                  .
+                </span>
+              </p>
+              <p className="text-gray-500 mt-2">
+                바둑 이야기를 담는 AI 기반 복기 서비스
+              </p>
+            </div>
+          <div className="flex space-x-6">
+            <a href="#" className="text-gray-500 hover:text-gray-900 transition-colors">
+              블로그
+              </a>
+            <a href="#" className="text-gray-500 hover:text-gray-900 transition-colors">
+              문의하기
+            </a>
+            <a href="#" className="text-gray-500 hover:text-gray-900 transition-colors">
+              개인정보처리방침
+            </a>
+          </div>
+        </div>
+        <div className="border-t border-gray-200 mt-8 pt-8 flex justify-center">
+          <p className="text-sm text-gray-500">
+            © 2025 Goggle. All rights reserved.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );
