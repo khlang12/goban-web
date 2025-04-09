@@ -313,50 +313,42 @@ export class Game {
       if (moveMatch && coord !== '') {
         const x = charToPos(coord[0]);
         const y = charToPos(coord[1]);
-        
-        // 보드에 돌 직접 놓기
+
         newBoardState[x][y].stone = color;
-        
-        // 포획 로직 간소화
+
         if (game.intersections[x][y].stone === Stone.None) {
-          // 돌 놓기
           game.intersections[x][y].stone = color;
-          
-          // 포획 로직 효율적으로 실행
+
           const otherPlayer = color === Stone.Black ? Stone.White : Stone.Black;
           const capturedGroups = [];
-          
-          // 이웃 확인 - 직접 좌표 배열 사용
           const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
           const processedStones = new Set<string>();
-          
+          let numCaptured = 0;
+
           for (const [dx, dy] of directions) {
             const nx = x + dx;
             const ny = y + dy;
-            
-            // 유효 범위 확인
+
             if (nx >= 0 && nx < game.xLines && ny >= 0 && ny < game.yLines) {
               const neighbor = game.intersections[nx][ny];
-              
-              // 상대 돌이고 아직 처리되지 않았으면
+
               if (neighbor.stone === otherPlayer && !processedStones.has(`${nx},${ny}`)) {
                 const captured = game.getCapturedGroup(neighbor);
-                
+
                 if (captured.length > 0) {
                   capturedGroups.push(captured);
-                  
-                  // 포획된 돌 처리
+
                   for (const stone of captured) {
                     processedStones.add(`${stone.xPos},${stone.yPos}`);
                     newBoardState[stone.xPos][stone.yPos].stone = Stone.None;
                     game.intersections[stone.xPos][stone.yPos].stone = Stone.None;
+                    numCaptured++;
                   }
                 }
               }
             }
           }
-          
-          // 자기 돌도 잡힐 수 있는지 확인
+
           const selfCaptured = game.getCapturedGroup(game.intersections[x][y]);
           if (selfCaptured.length > 0) {
             for (const stone of selfCaptured) {
@@ -364,7 +356,15 @@ export class Game {
               game.intersections[stone.xPos][stone.yPos].stone = Stone.None;
             }
           }
-          
+
+          if (numCaptured > 0) {
+            if (color === Stone.Black) {
+              game.blackScore += numCaptured;
+            } else {
+              game.whiteScore += numCaptured;
+            }
+          }
+
           game.lastMove = game.intersections[x][y];
         }
       }
