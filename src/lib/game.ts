@@ -256,6 +256,15 @@ export class Game {
     
       // 마커 파싱 - 정규식 재사용
       let markerMatch;
+      // Define a mapping from SGF marker codes to our internal marker types
+      const typeMapping: { [key: string]: string } = {
+        TR: "triangle",
+        SQ: "square",
+        CR: "circle",
+        MA: "cross",
+        LB: "letter"
+      };
+
       while ((markerMatch = markerPattern.exec(node)) !== null) {
         const type = markerMatch[1];
         const coordsStr = markerMatch[2];
@@ -269,13 +278,21 @@ export class Game {
             const label = posMatch[2];
             const x = charToPos(pos[0]);
             const y = charToPos(pos[1]);
-            markers.push({ 
-              x, 
-              y, 
-              type: type === "MA" ? "cross" : type === "CR" ? "circle" : type.toLowerCase(), 
-              label 
+            markers.push({
+              x,
+              y,
+              type: typeMapping[type] || type.toLowerCase(),
+              label
             });
           }
+        }
+      }
+      
+      // 마커 파싱 이후에 node의 moveNum을 각 마커에 할당
+      if (markers.length > 0) {
+        const nodeMoveNum = (prevState ? prevState.moveNum + 1 : 0);
+        for (let i = 0; i < markers.length; i++) {
+          markers[i].moveNum = nodeMoveNum;
         }
       }
       
@@ -384,9 +401,9 @@ export class Game {
       lastMoveColor = color;
     }
     
-    // 최종 상태 적용
+    // 최종 상태 적용: 게임 상태 체인의 마지막 상태(prevState)를 그대로 사용하여, 각 노드의 마커가 온전하게 보존되도록 함
     if (prevState && prevState !== game.gameState) {
-      game.loadGameState(prevState);
+      game.gameState = prevState;
     }
     
     if (game.stateChangeCallback) {
@@ -456,8 +473,8 @@ export class Game {
           LB: [] as string[], // label
         };
  
-        const markerMap = new Map<string, typeof this.markers[0]>();
-        for (const marker of [...this.markers, ...(state.markers ?? [])]) {
+        const markerMap = new Map<string, any>();
+        for (const marker of (state.markers ?? [])) {
           const key = `${marker.x}-${marker.y}-${marker.type}-${marker.label || ''}-${marker.moveNum || ''}`;
           if (!markerMap.has(key)) {
             markerMap.set(key, marker);
