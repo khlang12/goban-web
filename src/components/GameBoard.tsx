@@ -127,7 +127,7 @@ export default function GameBoard() {
           <Board
             size={19}
             boardState={boardState}
-            lastMove={lastMove}
+            lastMoveMarkers={game?.getCurrentAndNextMove()}
             isGameEnded={isGameEnded}
             onIntersectionClick={handleIntersectionClick}
             markers={game?.getGameState()?.markers ?? []}

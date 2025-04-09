@@ -1025,6 +1025,12 @@ export class Game {
   public getWhiteScore(): number { return this.whiteScore; }
   public getLastMove(): Intersection | null { return this.lastMove; }
   public getGameState(): GameState | null { return this.gameState; }
+  public getCurrentAndNextMove(): { current?: Intersection; next?: Intersection } {
+    return {
+      current: this.gameState?.move ?? undefined,
+      next: this.gameState?.nextGameState?.move ?? undefined
+    };
+  }
 
   public getScoreWithTerritory(color: Stone): { score: number, territory: number } {
     const baseScore = color === Stone.Black ? this.blackScore : this.whiteScore;

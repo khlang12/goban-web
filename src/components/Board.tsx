@@ -7,7 +7,7 @@ import { Stone as StoneEnum, STONE_CLASSES } from '@/lib/types';
 interface BoardProps {
   size: number;
   boardState: any[][];
-  lastMove: {x: number, y: number} | null;
+  lastMoveMarkers?: { current?: { xPos: number; yPos: number; stone: number }; next?: { xPos: number; yPos: number; stone: number } };
   isGameEnded: boolean;
   onIntersectionClick: (x: number, y: number) => void;
   markers?: { x: number; y: number; type: string; label?: string }[];
@@ -16,7 +16,7 @@ interface BoardProps {
 export default function Board({ 
   size, 
   boardState, 
-  lastMove, 
+  lastMoveMarkers, 
   isGameEnded,
   onIntersectionClick,
   markers 
@@ -236,17 +236,31 @@ export default function Board({
     }
     
     // 마지막 수 표시
-    if (lastMove) {
-      const stoneColor = 
-        boardState[lastMove.x][lastMove.y].stone === StoneEnum.Black ? 'white' : 'black';
-        
+    if (lastMoveMarkers?.current) {
+      const { xPos, yPos, stone } = lastMoveMarkers.current;
+      const stroke = stone === StoneEnum.Black ? 'white' : 'black';
+
       svg.append('circle')
-        .attr('cx', stoneRadius + lastMove.x * (width / size))
-        .attr('cy', stoneRadius + lastMove.y * (height / size))
+        .attr('cx', stoneRadius + xPos * (width / size))
+        .attr('cy', stoneRadius + yPos * (height / size))
         .attr('r', stoneRadius / 2.5)
-        .attr('class', 'last-move')
-        .attr('fill', 'none')
-        .attr('stroke', stoneColor)
+        .attr('class', 'last-move-current')
+        .attr('fill', stone === StoneEnum.Black ? 'black' : 'white')
+        .attr('stroke', stroke)
+        .attr('stroke-width', 2);
+    }
+
+    if (lastMoveMarkers?.next) {
+      const { xPos, yPos, stone } = lastMoveMarkers.next;
+      const stroke = stone === StoneEnum.White ? 'black' : 'white';
+
+      svg.append('circle')
+        .attr('cx', stoneRadius + xPos * (width / size))
+        .attr('cy', stoneRadius + yPos * (height / size))
+        .attr('r', stoneRadius / 2.5)
+        .attr('class', 'last-move-next')
+        .attr('fill', stone === StoneEnum.White ? 'white' : 'black')
+        .attr('stroke', stroke)
         .attr('stroke-width', 2);
     }
     
@@ -255,7 +269,7 @@ export default function Board({
       // (간소화 버전에서는 생략)
     }
     
-  }, [boardState, size, lastMove, isGameEnded, stoneRadius, onIntersectionClick, markers]);
+  }, [boardState, size, lastMoveMarkers, isGameEnded, stoneRadius, onIntersectionClick, markers]);
   
   return (
     <div className="w-full flex justify-center">
