@@ -47,7 +47,7 @@ export default function GameControls({
       {(showOnlyScoreBoxes || (!showOnlyToolButtons && !showOnlyControlButtons)) && (
         <div className="flex justify-center gap-4">
           {/* 흑 점수 */}
-          <div className={`aspect-square w-18 flex flex-col justify-center items-center p-3 rounded-md shadow-md ${currentPlayer === Stone.Black ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}>
+          <div className={`min-w-[4.5rem] px-3 py-2 flex flex-col justify-center items-center rounded-md shadow-md ${currentPlayer === Stone.Black ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}>
             <h3 className="text-center font-bold">흑</h3>
             <div className="text-center text-xl">
               {isGameEnded 
@@ -56,7 +56,7 @@ export default function GameControls({
             </div>
           </div>
           {/* 백 점수 */}
-          <div className={`aspect-square w-18 flex flex-col justify-center items-center p-3 rounded-md shadow-md ${currentPlayer === Stone.White ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}>
+          <div className={`min-w-[4.5rem] px-3 py-2 flex flex-col justify-center items-center rounded-md shadow-md ${currentPlayer === Stone.White ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}>
             <h3 className="text-center font-bold">백</h3>
             <div className="text-center text-xl">
               {isGameEnded 
