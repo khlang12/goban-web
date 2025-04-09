@@ -258,7 +258,7 @@ export default function Board({
   }, [boardState, size, lastMove, isGameEnded, stoneRadius, onIntersectionClick, markers]);
   
   return (
-    <div className="w-full flex justify-center my-4">
+    <div className="w-full flex justify-center">
       <svg 
         ref={svgRef} 
         width={width} 

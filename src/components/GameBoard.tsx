@@ -102,7 +102,37 @@ export default function GameBoard() {
   return (
     <div className="flex gap-4">
       <div className="flex-1">
-        <div className="container mx-auto p-4">          
+        <div className="container mx-auto p-4 flex flex-col">
+          <GameControls
+            currentPlayer={currentPlayer}
+            blackScore={blackScore}
+            whiteScore={whiteScore}
+            blackTerritory={blackTerritory}
+            whiteTerritory={whiteTerritory}
+            isGameEnded={isGameEnded}
+            onPass={pass}
+            onUndo={undo}
+            onRedo={redo}
+            onSave={() => {
+              const sgf = gameRef.current?.saveSGF();
+              if (sgf) {
+                const blob = new Blob([sgf], { type: 'application/x-go-sgf' });
+                FileSaver.saveAs(blob, 'game.sgf');
+              }
+            }}
+            onLoad={importSGF}
+            showToolButtons={false}
+          />
+
+          <Board
+            size={19}
+            boardState={boardState}
+            lastMove={lastMove}
+            isGameEnded={isGameEnded}
+            onIntersectionClick={handleIntersectionClick}
+            markers={game?.getGameState()?.markers ?? []}
+          />  
+
           <GameControls
             currentPlayer={currentPlayer}
             blackScore={blackScore}
@@ -123,16 +153,8 @@ export default function GameBoard() {
             onLoad={importSGF}
             onSelectTool={setCurrentTool}
             selectedTool={currentTool}
+            showOnlyToolButtons={true}
           />
-
-          <Board
-            size={19}
-            boardState={boardState}
-            lastMove={lastMove}
-            isGameEnded={isGameEnded}
-            onIntersectionClick={handleIntersectionClick}
-            markers={game?.getGameState()?.markers ?? []}
-          />  
         </div>
       </div>
       <RightSidebar comment={comment} setComment={setComment} gameRef={gameRef} />
